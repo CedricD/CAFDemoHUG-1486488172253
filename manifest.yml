@@ -6,5 +6,3 @@ applications:
   name: CAFDemoHUG
   host: CAFDemoHUG
   disk_quota: 1024M
-  services:
-  - Mobile Client Access-iyleinbu

@@ -1,26 +1,157 @@
-<!DOCTYPE html>
 <html>
 
-  <head>
-    <title>NodeJS Starter Application</title>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="stylesheets/style.css">
-  </head>
+<script src="js/jquery.min.js"></script>
+<script src="js/panels.js"></script>
+<script src="js/api.js"></script>
 
-  <body>
-    <table>
-      <tr>
-        <td style= "width:30%;">
-          <img class = "newappIcon" src="images/newapp-icon.png">
-        </td>
-        <td>
-          <h1 id="message">Hello World!</h1>
-          <p class='description'></p> Thanks for creating a <span class = "blue">NodeJS Starter Application</span>.
-        </td>
-      </tr>
-    </table>
-  </body>
+<head>
+  <base href="/">
+  <title>Watson demo</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta property="og:title" content="Olivia - App Demo" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="css/app.css">
+</head>
 
+<body>
+
+<div id="contentParent" class="responsive-columns-wrapper">
+    <div id="chat-column-holder" class="responsive-column content-column">
+
+        <div id="feedbackSub">
+            <form name='formFeedback' class="form-log-feedback">
+                <p style="font-size: 16px;">Ajouter s'il vous plait un commentaire à votre retour d'information</p>
+                <input id="feedComment" type="text" placeholder="" value=""><br>
+                <input class="button-submit" type="button" value="ANNULER" id="cancelFeedComment">
+                <input class="button-submit" type="button" value="SOUMETTRE" id="subFeedComment">
+            </form>
+        </div>
+
+        <img id="chat-column-logo" src="/img/logo/oliviaLogo.png">
+
+        <div class="chat-column">
+            <div id="scrollingChat"></div>
+            <label for="textInput" class="inputOutline">
+                <input id="textInput" class="input responsive-column"
+                       placeholder="Taper votre message ici ..." type="text"
+                       onkeydown="ConversationPanel.inputKeyDown(event, this)">
+            </label>
+            <!--div id="mic-holder" class="micHolder" onclick="Api.micListen(this.className)"></div-->
+            <div id="spin-holder" class="spinHolder"><img class="spinLoad" src="/img/loader/spinLoader.gif"></div>
+            <div id="sendT-holder" class="sendTHolder" onclick="Api.sendTranscript()"><img class="sendT" src="/img/loader/sendT.png"></div>
+        </div>
+    </div>
+
+    <div id='logSub' class='logCan'>
+        <form class='form-log-con'>
+            <p style="font-size: medium;">Ajouter s'il vous plait un commentaire à votre log de conversation:</p>
+            <input id="logComment" type="text" placeholder="">
+            <br/>
+            <input class="button-submit" type="button" value="CANCEL" onclick="configPanel.cancelLogSub()">
+            <input class="button-submit" type="button" value="SUBMIT" onclick="Api.appendToLog(form)">
+        </form>
+    </div>
+    <div id="communityPost">
+        <form name='formCommunity' class="form-community">
+            <p>Désolé je ne peux pas vous aider avec cette question:<br></p>
+            <input style="font-size:14px" id="feedQuestion" type="text" placeholder=""><br>
+            <p>Souhaiteriez-vous publier votre question sur un forum afin que d'autres utilisateurs vous aident?</p>
+            <input class="button-submit" type="button" value="CANCEL" onclick="configPanel.cancelLogSub()">
+            <input class="button-submit" type="button" value="POST" onclick="Api.setForumTopic(form.feedQuestion.value)">
+        </form>
+    </div>
+
+    <div id="slider" class="exstension">
+        <div id="payload-header-toggleEvent" class="payload" onclick="PayloadPanel.togglePanel(event, this)"> <!--TODO-->
+            <img class="option not-full" id="sliderImg" src="/img/buttons/slideLeft.png">
+            <div id="sliderTriangle" class="button"></div>
+            <div style="height: 100%; padding-top: 3rem" ontouchstart="touchStart(event,'slider');" ontouchend="touchEnd(event);" ontouchmove="touchMove(event);"
+                 ontouchcancel="touchCancel(event);">
+            </div>
+        </div>
+    </div>
+    <div id="payload-column" class="fixed-column content-column">
+        <div id="payload-initial-message"></div>
+        <div id="payload-header" class="payload">
+            <div class="header-text">
+                <div id="payload-title">
+                    <p style="margin: 0.7rem 0 0 0">Demo</p>
+                </div>
+                <div id="view-change-button-clear" class="buttonPayload" style=""> <!--TODO-->
+                    <div class="tooltip">
+                        <img class="clear-icn" id="resetImgClear" src="/img/buttons/reset.png" onclick="configPanel.clearPanels()"> <!--TODO-->
+                        <span class="tooltiptext">Remise à zéro de votre conversation</span >
+                    </div>
+                </div>
+
+                <div id="view-change-button-vol" class="buttonPayload volSet" style="">                 <!--TODO-->
+                    <div class="tooltip" id="volSet">
+                        <img id="resetImgVol" class="volOn" src="/img/buttons/volOn.png" onclick="configPanel.setVolume(this.className)">    <!--TODO-->
+                        <span class="tooltiptext">Volume On/Off</span>
+                    </div>
+                </div>
+
+                <div id="view-change-buttonSave" class="buttonPayload stroeConv" style="">                                               <!--TODO-->
+                    <div class="tooltip">
+                        <img class="log-sub-icn" id="resetImgSave" src="/img/buttons/saveLogs.png" onclick="configPanel.confirmLogSub()"> <!--TODO-->
+                        <span class="tooltiptext">Store the chat</span >
+                    </div>
+                </div>
+
+
+                <div id="view-change-buttonDisplay" class="buttonPayload displayLog" style="">                                              <!--TODO-->
+                    <div  class="tooltip">
+                        <img class="log-fetch-icn" id="resetImgDisplay" src="/img/buttons/displayLogs.png" onclick="Api.getConvLog()">    <!--TODO-->
+                        <span  class="tooltiptext">Display chat logs</span >
+                    </div>
+                </div>
+
+                <div id="view-change-buttonFR" class="buttonPayload extUrl" style="">                                       <!--TODO-->
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImgFR" src="/img/buttons/français.jpg" onclick="Api.ListenLastMessageFR()">         <!--TODO-->
+<!--                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia.</span >-->
+                    </div>
+                </div>
+
+                <div id="view-change-buttonEN" class="buttonPayload extUrl" style="">                                  <!--TODO-->
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImgEN" src="/img/buttons/english.jpg" onclick="Api.ListenLastMessageEN()">     <!--TODO-->
+<!--                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia en Anglais.</span >-->
+                    </div>
+                </div>
+
+                <div id="view-change-buttonSP" class="buttonPayload extUrl" style="">                                   <!--TODO-->
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImgSP" src="/img/buttons/spanish.jpg" onclick="Api.ListenLastMessageSP()">      <!--TODO-->
+<!--                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia en Espagnol.</span >-->
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+        <div id="response-panel" class="fixed-column content-column"></div>
+
+        <div id="logDatesContainer"></div>
+
+        <div id="payload-request" class="hide"></div>
+        <div id="payload-response" class="hide"></div>
+    </div>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/conversation.js"></script>
+<script src="js/payload.js"></script>
+<script src="js/global.js"></script>
+<script src="js/swipe.js"></script>
+<script src="js/aRecorder.js"></script>
+
+</body>
 </html>

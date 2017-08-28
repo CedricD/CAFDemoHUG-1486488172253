@@ -1,0 +1,208 @@
+<html>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/panels.js"></script>
+<script src="js/api.js"></script>
+
+<head>
+    <base href="/">
+    <title>Démonstration des services watson pour HUG</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta property="og:title" content="Olivia - App Demo" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/public/css/app.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <style>
+        @import url(http://fonts.googleapis.com/css?family=Open+Sans:400,600,700);
+        .star-ratings-css {
+            unicode-bidi: bidi-override;
+            color: #c5c5c5;
+            font-size: 25px;
+            height: 25px;
+            width: 100px;
+            margin: 0 auto;
+            position: relative;
+            padding: 0;
+            text-shadow: 0px 1px 0 #a2a2a2;
+        }
+        .star-ratings-css-top {
+            color: #e7711b;
+            padding: 0;
+            position: absolute;
+            z-index: 1;
+            display: block;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+        }
+        .star-ratings-css-bottom {
+            padding: 0;
+            display: block;
+            z-index: 0;
+        }
+        .star-ratings-sprite {
+            background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2605/star-rating-sprite.png") repeat-x;
+            font-size: 0;
+            height: 21px;
+            line-height: 0;
+            overflow: hidden;
+            text-indent: -999em;
+            width: 110px;
+            margin: 0 auto;
+        }
+        .star-ratings-sprite-rating {
+            background: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/2605/star-rating-sprite.png") repeat-x;
+            background-position: 0 100%;
+            float: left;
+            height: 21px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+<body>
+<div class="star-ratings-sprite"><span style="width:52%" class="star-ratings-sprite-rating"></span></div>
+
+<div id="contentParent" class="responsive-columns-wrapper">
+    <div id="chat-column-holder" class="responsive-column content-column">
+
+        <div id="feedbackSub">
+            <form name='formFeedback' class="form-log-feedback">
+                <p style="font-size: 16px;">Ajouter s'il vous plait un commentaire à votre retour d'information</p>
+                <input id="feedComment" type="text" placeholder="" value=""><br>
+                <input class="button-submit" type="button" value="ANNULER" id="cancelFeedComment">
+                <input class="button-submit" type="button" value="SOUMETTRE" id="subFeedComment">
+            </form>
+        </div>
+
+        <img id="chat-column-logo" src="../img/logo/logo.png">
+
+        <div class="chat-column">
+            <div id="scrollingChat"></div>
+            <label for="textInput" class="inputOutline">
+                <input id="textInput" class="input responsive-column"
+                       placeholder="Taper votre message ici ..." type="text"
+                       onkeydown="ConversationPanel.inputKeyDown(event, this)">
+            </label>
+            <!--div id="mic-holder" class="micHolder" onclick="Api.micListen(this.className)"></div-->
+            <div id="spin-holder" class="spinHolder"><img class="spinLoad" src="../img/loader/spinLoader.gif"></div>
+            <div id="sendT-holder" class="sendTHolder" onclick="Api.sendTranscript()"><img class="sendT" src="../img/loader/sendT.png"></div>
+        </div>
+    </div>
+
+    <div id='logSub' class='logCan'>
+        <form class='form-log-con'>
+            <p style="font-size: medium;">Ajouter s'il vous plait un commentaire à votre log de conversation:</p>
+            <input id="logComment" type="text" placeholder="">
+            <br/>
+            <input class="button-submit" type="button" value="CANCEL" onclick="configPanel.cancelLogSub()">
+            <input class="button-submit" type="button" value="SUBMIT" onclick="Api.appendToLog(form)">
+        </form>
+    </div>
+    <div id="communityPost">
+        <form name='formCommunity' class="form-community">
+            <p>Désolé je ne peux pas vous aider avec cette question:<br></p>
+            <input style="font-size:14px" id="feedQuestion" type="text" placeholder=""><br>
+            <p>Souhaiteriez-vous publier votre question sur un forum afin que d'autres utilisateurs vous aident?</p>
+            <input class="button-submit" type="button" value="CANCEL" onclick="configPanel.cancelLogSub()">
+            <input class="button-submit" type="button" value="POST" onclick="Api.setForumTopic(form.feedQuestion.value)">
+        </form>
+    </div>
+
+    <div id="slider" class="exstension">
+        <div id="payload-header" class="payload" onclick="PayloadPanel.togglePanel(event, this)">
+            <img class="option not-full" id="sliderImg" src="../img/buttons/slideLeft.png">
+            <div id="sliderTriangle" class="button"></div>
+            <div style="height: 100%; padding-top: 3rem" ontouchstart="touchStart(event,'slider');" ontouchend="touchEnd(event);" ontouchmove="touchMove(event);"
+                 ontouchcancel="touchCancel(event);">
+            </div>
+        </div>
+    </div>
+    <div id="payload-column" class="fixed-column content-column">
+        <div id="payload-initial-message"></div>
+        <div id="payload-header" class="payload">
+            <div class="header-text">
+                <div id="payload-title">
+                    <p style="margin: 0.7rem 0 0 0">Démonstration</p>
+                </div>
+                <div id="view-change-button" class="buttonPayload" style="">
+                    <div class="tooltip">
+                        <img class="clear-icn" id="resetImg" src="../img/buttons/reset.png" onclick="configPanel.clearPanels()">
+                        <span class="tooltiptext">Remise à zéro de votre conversation</span >
+                    </div>
+                </div>
+
+                <div id="view-change-button" class="buttonPayload volSet" style="">
+                    <div class="tooltip" id="volSet">
+                        <img id="resetImg" class="volOn" src="../img/buttons/volOn.png" onclick="configPanel.setVolume(this.className)">
+                        <span class="tooltiptext">Volume On/Off</span>
+                    </div>
+                </div>
+
+                <div id="view-change-button" class="buttonPayload stroeConv" style="">
+                    <div class="tooltip">
+                        <img class="log-sub-icn" id="resetImg" src="../img/buttons/saveLogs.png" onclick="configPanel.confirmLogSub()">
+                        <span class="tooltiptext">Enregistrer la conversation</span >
+                    </div>
+                </div>
+
+
+                <div id="view-change-button" class="buttonPayload displayLog" style="">
+                    <div  class="tooltip">
+                        <img class="log-fetch-icn" id="resetImg" src="../img/buttons/displayLogs.png" onclick="Api.getConvLog()">
+                        <span  class="tooltiptext">Afficher les conversations enregistrées</span >
+                    </div>
+                </div>
+
+                <div id="view-change-button" class="buttonPayload extUrl" style="">
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImg" src="../img/buttons/français.jpg" onclick="Api.ListenLastMessageFR()">
+                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia.</span >
+                    </div>
+                </div>
+
+                <div id="view-change-button" class="buttonPayload extUrl" style="">
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImg" src="../img/buttons/english.jpg" onclick="Api.ListenLastMessageEN()">
+                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia en Anglais.</span >
+                    </div>
+                </div>
+
+                <div id="view-change-button" class="buttonPayload extUrl" style="">
+                    <div  class="tooltip">
+                        <!-- configPanel.setLink()-->
+                        <img id="resetImg" src="../img/buttons/spanish.jpg" onclick="Api.ListenLastMessageSP()">
+                        <span  class="tooltiptext">Ecoutez la dernière réponse d'Olivia en Espagnol.</span >
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+        <div id="response-panel" class="fixed-column content-column"></div>
+
+        <div id="logDatesContainer"></div>
+
+        <div id="payload-request" class="hide"></div>
+        <div id="payload-response" class="hide"></div>
+    </div>
+</div>
+
+<script src="js/common.js"></script>
+<script src="js/conversation.js"></script>
+<script src="js/payload.js"></script>
+<script src="js/global.js"></script>
+<script src="js/swipe.js"></script>
+<script src="js/aRecorder.js"></script>
+
+
+</body>
+</html>
